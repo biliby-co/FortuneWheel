@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AudioToolbox
 
 @available(macOS 10.15, *)
 @available(iOS 13.0, *)
@@ -13,11 +14,33 @@ class FortuneWheelViewModel: ObservableObject {
 
     private var pendingRequestWorkItem: DispatchWorkItem?
     @Published var degree = 0.0
+    
+    // Tick sound properties
+    private var lastTickSegment = -1
+    private var tickSoundEnabled = true
+    private var animationStartTime: TimeInterval = 0
 
     private let model: FortuneWheelModel
 
     init(model: FortuneWheelModel) {
         self.model = model
+        self.tickSoundEnabled = model.enableTickSound
+    }
+    
+    private func playTickSound() {
+        if tickSoundEnabled {
+            AudioServicesPlaySystemSound(1104) // System tick sound
+        }
+    }
+    
+    private func getCurrentSegmentUnderPointer() -> Int {
+        let count = model.titles.count
+        let normalizedDegree = degree.truncatingRemainder(dividingBy: 360)
+        // Convert to 0-360 range and adjust for pointer position (top of wheel)
+        let adjustedDegree = (360 - normalizedDegree).truncatingRemainder(dividingBy: 360)
+        let segmentSize = 360.0 / Double(count)
+        let segment = Int(adjustedDegree / segmentSize)
+        return segment
     }
 
     private func getWheelStopDegree() -> Double {
@@ -40,22 +63,56 @@ class FortuneWheelViewModel: ObservableObject {
     }
     
     func spinWheel() {
+        // Reset tick tracking
+        lastTickSegment = -1
+        
         withAnimation(model.animation) {
             self.degree = Double(360 * Int(self.degree / 360)) + getWheelStopDegree();
-        } completion: { [weak self] in
-        // Cancel the currently pending item
-        // pendingRequestWorkItem?.cancel()
-        // Wrap our request in a work item
-        // let requestWorkItem = DispatchWorkItem { [weak self] in
+        }
+        
+        // Start tick sound monitoring during animation
+        startTickSoundMonitoring()
+        
+        // Handle completion after animation duration
+        DispatchQueue.main.asyncAfter(deadline: .now() + model.animDuration) { [weak self] in
             guard let self = self else { return }
             let count = self.model.titles.count
             let distance = self.degree.truncatingRemainder(dividingBy: 360)
             let pointer = floor(distance / (360 / Double(count)))
             if let onSpinEnd = self.model.onSpinEnd { onSpinEnd(count - Int(pointer) - 1) }
-        // }
-        // // Save the new work item and execute it after duration
-        // pendingRequestWorkItem = requestWorkItem
-        // DispatchQueue.main.asyncAfter(deadline: .now() + model.animDuration + 1, execute: requestWorkItem)
         }
+    }
+    
+    private func startTickSoundMonitoring() {
+        // Cancel any existing monitoring
+        pendingRequestWorkItem?.cancel()
+        
+        animationStartTime = Date().timeIntervalSince1970
+        
+        func scheduleNextTick() {
+            let workItem = DispatchWorkItem { [weak self] in
+                guard let self = self else { return }
+                
+                let currentSegment = self.getCurrentSegmentUnderPointer()
+                
+                // Play tick sound when a new segment passes under the pointer
+                if currentSegment != self.lastTickSegment && self.lastTickSegment != -1 {
+                    self.playTickSound()
+                }
+                
+                self.lastTickSegment = currentSegment
+                
+                // Continue monitoring if animation is still running
+                let remainingTime = self.model.animDuration - (Date().timeIntervalSince1970 - self.animationStartTime)
+                if remainingTime > 0.1 { // Continue if more than 0.1 seconds remain
+                    scheduleNextTick()
+                }
+            }
+            
+            self.pendingRequestWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: workItem)
+        }
+        
+        scheduleNextTick()
     }
 }

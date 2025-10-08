@@ -16,9 +16,9 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         if #available(iOS 14.0, *) {
-            let hostingController = UIHostingController(rootView: FortuneWheel(titles: ["Player 1", "Player 2"], size: 320, onSpinEnd: { i in
+            let hostingController = UIHostingController(rootView: FortuneWheel(titles: ["Player 1", "Player 2", "Player 3", "Player 4"], size: 320, onSpinEnd: { i in
                 print("value =", i)
-            }))
+            }, enableTickSound: true))
             view.addSubview(hostingController.view)
         }
     }

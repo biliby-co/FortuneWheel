@@ -21,6 +21,7 @@ public struct FortuneWheelModel {
     let animDuration: Double
     let animation: Animation
     let getWheelItemIndex: (() -> (Int))?
+    let enableTickSound: Bool
 
     public init(
         titles: [String], size: CGFloat, onSpinEnd: ((Int) -> ())?,
@@ -30,7 +31,8 @@ public struct FortuneWheelModel {
         strokeColor: Color? = nil,
         animDuration: Double = Double(6),
         animation: Animation? = nil,
-        getWheelItemIndex: (() -> (Int))? = nil
+        getWheelItemIndex: (() -> (Int))? = nil,
+        enableTickSound: Bool = true
     ) {
         self.titles = titles
         self.size = size
@@ -42,5 +44,6 @@ public struct FortuneWheelModel {
         self.animDuration = animDuration
         self.animation = animation ?? Animation.timingCurve(0.51, 0.97, 0.56, 0.99, duration: animDuration)
         self.getWheelItemIndex = getWheelItemIndex
+        self.enableTickSound = enableTickSound
     }
 }
