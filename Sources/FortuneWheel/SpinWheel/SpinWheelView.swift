@@ -73,6 +73,7 @@ struct SpinWheelView: View {
                     Text(labels[index]).foregroundColor(Color.white).fontWeight(.bold)
                         .rotationEffect(.radians(rotationAngle(for: index)))
                         .offset(viewOffset(for: index, in: geo.size)).zIndex(1)
+                        .shadow(color: Color(hex: "212121", alpha: 0.5), radius: 5, x: 0.0, y: 1.0)
                 }
             }
         }
@@ -116,11 +117,6 @@ struct SpinWheelView: View {
         }
         while rotationAngle >= 2 * .pi {
             rotationAngle -= 2 * .pi
-        }
-        
-        // Flip text that would appear upside down (between π/2 and 3π/2)
-        if rotationAngle > .pi / 2 && rotationAngle < 3 * .pi / 2 {
-            rotationAngle += .pi
         }
         
         return rotationAngle
