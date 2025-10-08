@@ -71,6 +71,7 @@ struct SpinWheelView: View {
                     SpinWheelCell(startAngle: startAngle(for: index), endAngle: endAngle(for: index))
                         .fill(colors[index % colors.count])
                     Text(labels[index]).foregroundColor(Color.white).fontWeight(.bold)
+                        .rotationEffect(.radians(rotationAngle(for: index)))
                         .offset(viewOffset(for: index, in: geo.size)).zIndex(1)
                 }
             }
@@ -100,5 +101,28 @@ struct SpinWheelView: View {
         let dataRatio = (2 * data[..<index].reduce(0, +) + data[index]) / (2 * data.reduce(0, +))
         let angle = CGFloat(sliceOffset + 2 * .pi * dataRatio)
         return CGSize(width: radius * cos(angle), height: radius * sin(angle))
+    }
+
+    private func rotationAngle(for index: Int) -> Double {
+        let dataRatio = (2 * data[..<index].reduce(0, +) + data[index]) / (2 * data.reduce(0, +))
+        let angle = sliceOffset + 2 * .pi * dataRatio
+        
+        // Calculate rotation angle to align text with segment
+        var rotationAngle = angle
+        
+        // Normalize angle to 0...2π range
+        while rotationAngle < 0 {
+            rotationAngle += 2 * .pi
+        }
+        while rotationAngle >= 2 * .pi {
+            rotationAngle -= 2 * .pi
+        }
+        
+        // Flip text that would appear upside down (between π/2 and 3π/2)
+        if rotationAngle > .pi / 2 && rotationAngle < 3 * .pi / 2 {
+            rotationAngle += .pi
+        }
+        
+        return rotationAngle
     }
 }
