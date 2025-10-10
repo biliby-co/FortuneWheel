@@ -13,6 +13,7 @@ public struct FortuneWheelModel {
 
     let titles: [String]
     let onSpinEnd: ((Int) -> ())?
+    let onSpinStart: (() -> ())?
     let colors: [Color]
     let pointerColor: Color
     let strokeWidth: CGFloat
@@ -23,7 +24,9 @@ public struct FortuneWheelModel {
     let enableTickSound: Bool
 
     public init(
-        titles: [String], size: CGFloat, onSpinEnd: ((Int) -> ())?,
+        titles: [String], size: CGFloat, 
+        onSpinEnd: ((Int) -> ())?,
+        onSpinStart: (() -> ())?,
         colors: [Color]? = nil,
         pointerColor: Color? = nil,
         strokeWidth: CGFloat = 15,
@@ -35,6 +38,7 @@ public struct FortuneWheelModel {
     ) {
         self.titles = titles
         self.onSpinEnd = onSpinEnd
+        self.onSpinStart = onSpinStart
         self.colors = colors ?? Color.spin_wheel_color
         self.pointerColor = pointerColor ?? Color(hex: "DA4533")
         self.strokeWidth = strokeWidth

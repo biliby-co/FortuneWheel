@@ -95,6 +95,8 @@ class FortuneWheelViewModel: ObservableObject {
         // Reset tick tracking
         lastTickSegment = -1
         
+        if let onSpinStart = model.onSpinStart { onSpinStart() }
+
         withAnimation(model.animation) {
             self.degree = Double(360 * Int(self.degree / 360)) + getWheelStopDegree();
         }
