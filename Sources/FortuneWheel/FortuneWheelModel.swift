@@ -12,7 +12,6 @@ import SwiftUI
 public struct FortuneWheelModel {
 
     let titles: [String]
-    let size: CGFloat
     let onSpinEnd: ((Int) -> ())?
     let colors: [Color]
     let pointerColor: Color
@@ -35,7 +34,6 @@ public struct FortuneWheelModel {
         enableTickSound: Bool = true
     ) {
         self.titles = titles
-        self.size = size
         self.onSpinEnd = onSpinEnd
         self.colors = colors ?? Color.spin_wheel_color
         self.pointerColor = pointerColor ?? Color(hex: "DA4533")

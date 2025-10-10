@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(AVFoundation)
+import AVFoundation
+#endif
 
 @available(macOS 11.0, *)
 @available(iOS 14.0, *)
@@ -21,30 +24,50 @@ public struct FortuneWheel: View {
     }
     
     public var body: some View {
-        ZStack(alignment: .top) {
-            ZStack(alignment: .center) {
-                SpinWheelView(data: (0..<model.titles.count).map { _ in Double(100 / model.titles.count) },
-                              labels: model.titles, colors: model.colors)
-                    .frame(width: model.size, height: model.size)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: model.size / 2)
-                            .stroke(lineWidth: model.strokeWidth)
-                            .foregroundColor(model.strokeColor)
-                    )
-                    .rotationEffect(.degrees(viewModel.degree))
-                    .gesture(
-                        DragGesture().onChanged({ (value) in
-                            if value.translation.width < 0 {
-                                viewModel.degree = Double(-value.translation.width)
-                            }
-                        }).onEnded({ (value) in
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                ZStack(alignment: .center) {
+                    SpinWheelView(data: (0..<model.titles.count).map { _ in Double(100 / model.titles.count) },
+                                labels: model.titles, colors: model.colors)
+                        .frame(width: geometry.size.width*0.9, height: geometry.size.width*0.9)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: (geometry.size.width*0.9) / 2)
+                                .stroke(lineWidth: model.strokeWidth)
+                                .foregroundColor(model.strokeColor)
+                        )
+                        .rotationEffect(.degrees(viewModel.degree))
+                        .gesture(
+                            DragGesture().onChanged({ (value) in
+                                if value.translation.width < 0 {
+                                    viewModel.degree = Double(-value.translation.width)
+                                }
+                            }).onEnded({ (value) in
+                                viewModel.spinWheel()
+                            })
+                        ).onTapGesture {
                             viewModel.spinWheel()
-                        })
-                    )
-                SpinWheelBolt()
+                        }
+                    SpinWheelBolt()
+                }
+                SpinWheelPointer(pointerColor: model.pointerColor).offset(x: 0, y: -25)
             }
-            SpinWheelPointer(pointerColor: model.pointerColor).offset(x: 0, y: -25)
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .onAppear {
+                setupAudioSession()
+            }
         }
+    }
+    
+    private func setupAudioSession() {
+        #if canImport(AVFoundation) && !os(macOS)
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.ambient, mode: .default)
+            try audioSession.setActive(true)
+        } catch {
+            print("Failed to setup audio session: \(error)")
+        }
+        #endif
     }
 }
 
