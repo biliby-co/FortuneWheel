@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-#if canImport(AVFoundation)
-import AVFoundation
-#endif
 
 @available(macOS 11.0, *)
 @available(iOS 14.0, *)
@@ -52,22 +49,7 @@ public struct FortuneWheel: View {
                 SpinWheelPointer(pointerColor: model.pointerColor).offset(x: 0, y: -25)
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
-            .onAppear {
-                setupAudioSession()
-            }
         }
-    }
-    
-    private func setupAudioSession() {
-        #if canImport(AVFoundation) && !os(macOS)
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.ambient, mode: .default)
-            try audioSession.setActive(true)
-        } catch {
-            print("Failed to setup audio session: \(error)")
-        }
-        #endif
     }
 }
 
