@@ -54,13 +54,15 @@ struct SpinWheelView: View {
     var data: [Double], labels: [String]
     
     private let colors: [Color]
+    private let disabledIndices: Set<Int>
     private let sliceOffset: Double = -.pi / 2
     @available(macOS 10.15, *)
     
-    init(data: [Double], labels: [String], colors: [Color]) {
+    init(data: [Double], labels: [String], colors: [Color], disabledIndices: Set<Int> = []) {
         self.data = data
         self.labels = labels
         self.colors = colors
+        self.disabledIndices = disabledIndices
     }
     @available(macOS 10.15.0, *)
     
@@ -69,8 +71,10 @@ struct SpinWheelView: View {
             ZStack(alignment: .center) {
                 ForEach(0..<data.count) { index in
                     SpinWheelCell(startAngle: startAngle(for: index), endAngle: endAngle(for: index))
-                        .fill(colors[index % colors.count])
-                    Text(labels[index]).foregroundColor(Color.white).fontWeight(.bold)
+                        .fill(segmentColor(for: index))
+                    Text(labels[index])
+                        .foregroundColor(disabledIndices.contains(index) ? Color.white.opacity(0.55) : Color.white)
+                        .fontWeight(.bold)
                         .rotationEffect(.radians(rotationAngle(for: index)))
                         .offset(viewOffset(for: index, in: geo.size)).zIndex(1)
                         .shadow(color: Color(hex: "212121", alpha: 0.5), radius: 5, x: 0.0, y: 1.0)
@@ -102,6 +106,15 @@ struct SpinWheelView: View {
         let dataRatio = (2 * data[..<index].reduce(0, +) + data[index]) / (2 * data.reduce(0, +))
         let angle = CGFloat(sliceOffset + 2 * .pi * dataRatio)
         return CGSize(width: radius * cos(angle), height: radius * sin(angle))
+    }
+
+    private func segmentColor(for index: Int) -> Color {
+        let base = colors[index % colors.count]
+        guard disabledIndices.contains(index) else { return base }
+        return base
+            .saturation(0.15)
+            .brightness(0.12)
+            .opacity(0.72)
     }
 
     private func rotationAngle(for index: Int) -> Double {

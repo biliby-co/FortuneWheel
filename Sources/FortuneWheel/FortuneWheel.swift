@@ -24,8 +24,12 @@ public struct FortuneWheel: View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
                 ZStack(alignment: .center) {
-                    SpinWheelView(data: (0..<model.titles.count).map { _ in Double(100 / model.titles.count) },
-                                labels: model.titles, colors: model.colors)
+                    SpinWheelView(
+                        data: (0..<model.titles.count).map { _ in Double(100 / model.titles.count) },
+                        labels: model.titles,
+                        colors: model.colors,
+                        disabledIndices: model.disabledIndices
+                    )
                         .frame(width: geometry.size.width*0.9, height: geometry.size.width*0.9)
                         .overlay(
                             RoundedRectangle(cornerRadius: (geometry.size.width*0.9) / 2)

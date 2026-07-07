@@ -25,14 +25,13 @@ class FortuneWheelViewModel: ObservableObject {
     private func getWheelStopDegree() -> Double {
         var index = -1;
         if let method = model.getWheelItemIndex { index = method() }
-        if index < 0 || index >= model.titles.count { 
-            // Generate a random index, but exclude the last selected option if it exists
-            // Note: If there's only 1 option, we can't prevent the same result (expected behavior)
-            var availableIndices = Array(0..<model.titles.count)
-            if let lastIndex = lastSelectedIndex, model.titles.count > 1 {
+        if index < 0 || index >= model.titles.count {
+            let nonDisabledIndices = Array(0..<model.titles.count).filter { !model.disabledIndices.contains($0) }
+            var availableIndices = nonDisabledIndices
+            if let lastIndex = lastSelectedIndex, nonDisabledIndices.count > 1 {
                 availableIndices.removeAll { $0 == lastIndex }
             }
-            index = availableIndices.randomElement() ?? Int.random(in: 0..<model.titles.count)
+            index = availableIndices.randomElement() ?? nonDisabledIndices.randomElement() ?? 0
         }
         index = model.titles.count - index - 1;
         /*
