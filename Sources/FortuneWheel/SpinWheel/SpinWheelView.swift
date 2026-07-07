@@ -71,7 +71,11 @@ struct SpinWheelView: View {
             ZStack(alignment: .center) {
                 ForEach(0..<data.count) { index in
                     SpinWheelCell(startAngle: startAngle(for: index), endAngle: endAngle(for: index))
-                        .fill(segmentColor(for: index))
+                        .fill(colors[index % colors.count])
+                    if disabledIndices.contains(index) {
+                        SpinWheelCell(startAngle: startAngle(for: index), endAngle: endAngle(for: index))
+                            .fill(Color(hex: "BDBDBD", alpha: 0.55))
+                    }
                     Text(labels[index])
                         .foregroundColor(disabledIndices.contains(index) ? Color.white.opacity(0.55) : Color.white)
                         .fontWeight(.bold)
@@ -106,15 +110,6 @@ struct SpinWheelView: View {
         let dataRatio = (2 * data[..<index].reduce(0, +) + data[index]) / (2 * data.reduce(0, +))
         let angle = CGFloat(sliceOffset + 2 * .pi * dataRatio)
         return CGSize(width: radius * cos(angle), height: radius * sin(angle))
-    }
-
-    private func segmentColor(for index: Int) -> Color {
-        let base = colors[index % colors.count]
-        guard disabledIndices.contains(index) else { return base }
-        return base
-            .saturation(0.15)
-            .brightness(0.12)
-            .opacity(0.72)
     }
 
     private func rotationAngle(for index: Int) -> Double {
